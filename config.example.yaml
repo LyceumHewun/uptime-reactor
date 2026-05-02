@@ -6,14 +6,14 @@ server:
   port: 8787
 
 records:
-  "12":
+  "node-a":
     zoneId: "cloudflare-zone-id"
     name: "app.example.com"
     type: "A"
     content: "1.2.3.4"
     ttl: 60
     proxied: false
-  "13":
+  "node-b":
     zoneId: "cloudflare-zone-id"
     name: "app.example.com"
     type: "A"

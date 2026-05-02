@@ -5,7 +5,7 @@ Bun service for Uptime Kuma webhook events. It keeps a Cloudflare multi-`A` DNS 
 - `status: 0` removes the configured `A` record for that monitor.
 - `status: 1` adds the configured `A` record back if missing.
 - Repeated same status for a monitor is ignored from an in-memory cache.
-- Unknown `monitorId` returns `200 ignored` and does not touch Cloudflare.
+- Unknown `monitorKey` returns `200 ignored` and does not touch Cloudflare.
 - Cloudflare API errors are logged and still return `200` to Uptime Kuma.
 
 The status cache is memory-only. After restart, the first webhook per monitor runs once again and rebuilds cache.
@@ -16,12 +16,13 @@ Configure Uptime Kuma to send custom JSON:
 
 ```json
 {
-  "monitorId": "{{ monitorJSON['id'] }}",
-  "status": "{{ heartbeatJSON['status'] }}"
+  "monitorKey": "{{ name }}",
+  "status": "{{ status }}"
 }
 ```
 
-Only this shape is supported. `monitorId` is the config key.
+`monitorKey` is the config key. The old `monitorId` field is still accepted for compatibility.
+Uptime Kuma renders `status` as text such as `✅ Up` or `🔴 Down`; the notification test button renders `⚠️ Test`, which this service rejects because it is not a real UP/DOWN event.
 
 ## Config
 
@@ -36,7 +37,7 @@ server:
   port: 8787
 
 records:
-  "12":
+  "node-a":
     zoneId: "cloudflare-zone-id"
     name: "app.example.com"
     type: "A"

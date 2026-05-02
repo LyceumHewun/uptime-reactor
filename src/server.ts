@@ -37,36 +37,36 @@ export function makeHandler(deps: ServerDeps): (request: Request) => Promise<Res
       return new Response(`${parsed.error}\n`, { status: 400 });
     }
 
-    const record = deps.config.records[parsed.event.monitorId];
+    const record = deps.config.records[parsed.event.monitorKey];
     if (!record) {
-      deps.logger.info("ignored unknown monitor", { monitorId: parsed.event.monitorId });
+      deps.logger.info("ignored unknown monitor", { monitorKey: parsed.event.monitorKey });
       return new Response("ignored\n", { status: 200 });
     }
 
     if (parsed.event.status !== 0 && parsed.event.status !== 1) {
       deps.logger.info("ignored unsupported status", {
-        monitorId: parsed.event.monitorId,
+        monitorKey: parsed.event.monitorKey,
         status: parsed.event.status,
       });
       return new Response("ignored\n", { status: 200 });
     }
 
     const event: KumaEvent & { status: KnownStatus } = {
-      monitorId: parsed.event.monitorId,
+      monitorKey: parsed.event.monitorKey,
       status: parsed.event.status === 1 ? 1 : 0,
     };
 
-    const cachedStatus = statusCache.get(event.monitorId);
+    const cachedStatus = statusCache.get(event.monitorKey);
     if (cachedStatus === event.status) {
       deps.logger.info("ignored unchanged status", {
-        monitorId: event.monitorId,
+        monitorKey: event.monitorKey,
         status: event.status,
       });
       return new Response("ignored\n", { status: 200 });
     }
 
-    statusCache.set(event.monitorId, event.status);
-    const queueResult = deps.queue.enqueue(parsed.event.monitorId, async () => {
+    statusCache.set(event.monitorKey, event.status);
+    const queueResult = deps.queue.enqueue(parsed.event.monitorKey, async () => {
       await processEvent(deps, event);
     });
 
@@ -75,16 +75,16 @@ export function makeHandler(deps: ServerDeps): (request: Request) => Promise<Res
 }
 
 async function processEvent(deps: ServerDeps, event: KumaEvent & { status: 0 | 1 }): Promise<void> {
-  const record = deps.config.records[event.monitorId];
+  const record = deps.config.records[event.monitorKey];
   if (!record) {
-    deps.logger.info("ignored unknown monitor", { monitorId: event.monitorId });
+    deps.logger.info("ignored unknown monitor", { monitorKey: event.monitorKey });
     return;
   }
 
   try {
     const result = await applyDnsChange(deps.cloudflare, record, event.status);
     deps.logger.info("dns change complete", {
-      monitorId: event.monitorId,
+      monitorKey: event.monitorKey,
       name: record.name,
       type: record.type,
       content: record.content,
@@ -92,7 +92,7 @@ async function processEvent(deps: ServerDeps, event: KumaEvent & { status: 0 | 1
     });
   } catch (error) {
     deps.logger.error("cloudflare error", {
-      monitorId: event.monitorId,
+      monitorKey: event.monitorKey,
       name: record.name,
       type: record.type,
       content: record.content,

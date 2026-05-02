@@ -10,20 +10,20 @@ export function parseKumaPayload(payload: unknown): ParsePayloadResult {
   }
 
   const body = payload as Record<string, unknown>;
-  const monitorId = parseMonitorId(body.monitorId);
-  if (monitorId === undefined) {
-    return { ok: false, error: "monitorId is required" };
+  const monitorKey = parseMonitorKey(body.monitorKey ?? body.monitorId);
+  if (monitorKey === undefined) {
+    return { ok: false, error: "monitorKey is required" };
   }
 
   const status = parseStatus(body.status);
   if (status === undefined) {
-    return { ok: false, error: "status must be a number" };
+    return { ok: false, error: "status must be a number or uptime kuma status text" };
   }
 
-  return { ok: true, event: { monitorId, status } };
+  return { ok: true, event: { monitorKey, status } };
 }
 
-function parseMonitorId(value: unknown): string | undefined {
+function parseMonitorKey(value: unknown): string | undefined {
   if (typeof value === "string" && value.length > 0) {
     return value;
   }
@@ -34,9 +34,26 @@ function parseMonitorId(value: unknown): string | undefined {
 }
 
 function parseStatus(value: unknown): number | undefined {
-  const status = typeof value === "string" ? Number(value) : value;
+  const status = typeof value === "string" ? parseStringStatus(value) : value;
   if (typeof status === "number" && Number.isFinite(status)) {
     return status;
+  }
+  return undefined;
+}
+
+function parseStringStatus(value: string): number | undefined {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "0") {
+    return 0;
+  }
+  if (normalized === "1") {
+    return 1;
+  }
+  if (normalized.includes("down")) {
+    return 0;
+  }
+  if (normalized.includes("up")) {
+    return 1;
   }
   return undefined;
 }

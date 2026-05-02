@@ -21,7 +21,7 @@ export type AppConfig = {
 };
 
 export type KumaEvent = {
-  monitorId: string;
+  monitorKey: string;
   status: number;
 };
 

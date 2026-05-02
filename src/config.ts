@@ -14,20 +14,20 @@ export function parseConfig(value: unknown): AppConfig {
   const records = asObject(root.records, "records");
 
   const parsedRecords: Record<string, DnsRecordConfig> = {};
-  for (const [monitorId, recordValue] of Object.entries(records)) {
-    const record = asObject(recordValue, `records.${monitorId}`);
-    const type = readString(record.type, `records.${monitorId}.type`);
+  for (const [monitorKey, recordValue] of Object.entries(records)) {
+    const record = asObject(recordValue, `records.${monitorKey}`);
+    const type = readString(record.type, `records.${monitorKey}.type`);
     if (type !== "A") {
-      throw new Error(`records.${monitorId}.type must be A`);
+      throw new Error(`records.${monitorKey}.type must be A`);
     }
 
-    parsedRecords[String(monitorId)] = {
-      zoneId: readString(record.zoneId, `records.${monitorId}.zoneId`),
-      name: readString(record.name, `records.${monitorId}.name`),
+    parsedRecords[String(monitorKey)] = {
+      zoneId: readString(record.zoneId, `records.${monitorKey}.zoneId`),
+      name: readString(record.name, `records.${monitorKey}.name`),
       type,
-      content: readString(record.content, `records.${monitorId}.content`),
-      ttl: readNumber(record.ttl, `records.${monitorId}.ttl`),
-      proxied: readBoolean(record.proxied, `records.${monitorId}.proxied`),
+      content: readString(record.content, `records.${monitorKey}.content`),
+      ttl: readNumber(record.ttl, `records.${monitorKey}.ttl`),
+      proxied: readBoolean(record.proxied, `records.${monitorKey}.proxied`),
     };
   }
 

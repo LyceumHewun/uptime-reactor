@@ -24,7 +24,7 @@ const logger: Logger = {
 };
 
 describe("makeHandler", () => {
-  test("ignores unknown monitorId with 200", async () => {
+  test("ignores unknown monitorKey with 200", async () => {
     let enqueued = 0;
     const handler = makeHandler({
       config,
@@ -38,7 +38,7 @@ describe("makeHandler", () => {
       },
     });
 
-    const response = await handler(jsonRequest({ monitorId: "unknown", status: 1 }));
+    const response = await handler(jsonRequest({ monitorKey: "unknown", status: 1 }));
 
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("ignored\n");
@@ -81,7 +81,7 @@ describe("makeHandler", () => {
       },
     });
 
-    const response = await handler(jsonRequest({ monitorId: 12, status: "0" }));
+    const response = await handler(jsonRequest({ monitorKey: 12, status: "0" }));
 
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("started\n");
@@ -102,7 +102,7 @@ describe("makeHandler", () => {
       },
     });
 
-    const response = await handler(jsonRequest({ monitorId: "12", status: 2 }));
+    const response = await handler(jsonRequest({ monitorKey: "12", status: 2 }));
 
     expect(response.status).toBe(200);
     expect(await response.text()).toBe("ignored\n");
@@ -123,8 +123,8 @@ describe("makeHandler", () => {
       },
     });
 
-    const first = await handler(jsonRequest({ monitorId: "12", status: 1 }));
-    const second = await handler(jsonRequest({ monitorId: "12", status: 1 }));
+    const first = await handler(jsonRequest({ monitorKey: "12", status: 1 }));
+    const second = await handler(jsonRequest({ monitorKey: "12", status: 1 }));
 
     expect(first.status).toBe(200);
     expect(await first.text()).toBe("started\n");
@@ -148,8 +148,8 @@ describe("makeHandler", () => {
       },
     });
 
-    const first = await handler(jsonRequest({ monitorId: "12", status: 1 }));
-    const second = await handler(jsonRequest({ monitorId: "12", status: 0 }));
+    const first = await handler(jsonRequest({ monitorKey: "12", status: 1 }));
+    const second = await handler(jsonRequest({ monitorKey: "12", status: 0 }));
 
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
