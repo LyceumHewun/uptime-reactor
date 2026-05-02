@@ -1,0 +1,22 @@
+cloudflare:
+  apiToken: "cloudflare-api-token"
+
+server:
+  host: 127.0.0.1
+  port: 8787
+
+records:
+  "12":
+    zoneId: "cloudflare-zone-id"
+    name: "app.example.com"
+    type: "A"
+    content: "1.2.3.4"
+    ttl: 60
+    proxied: false
+  "13":
+    zoneId: "cloudflare-zone-id"
+    name: "app.example.com"
+    type: "A"
+    content: "5.6.7.8"
+    ttl: 60
+    proxied: false
